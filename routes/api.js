@@ -146,7 +146,7 @@ router.get('/contests/:cid/submissions/:subid/source-code', function(req, res, n
 router.put('/judgehosts/update-judging/:jd/:jid', function(req, res, next){
   console.log("received update");
   console.log(req.body);
-  if(req.body && req.body["compile_success"] === '0'){
+  if(req.body && req.body["compile_success"] !== '1'){
     submissionAcceptor.deliverResult(parseInt(req.params["jid"]), req.body, function(err, result){
       if(err) {
         console.log(err);

@@ -16,41 +16,50 @@ router.get('/', function(req, res, next) {
 });
 
 router.get('/status/:uid', function(req, res, next){
-  const tempSubmitInfo = submissionAcceptor.flushTempSubmission(req.params.uid, true);
-  if(!tempSubmitInfo["valid"]){
-    return res.json({
-      "status": "ERROR",
-      "message": "There was an error processing your submission. Please try again.",
-      "error": tempSubmitInfo
-    })
-  }
-  else if (tempSubmitInfo["file"] === undefined){
-    return res.json({
-      "status": "ERROR",
-      "message": "No submission file detected. Did you submit a file?"
-    })
-  }
-  else if(tempSubmitInfo["submitted"]){
-    return res.json({
-      "status": "OK",
-      "message": "Submitted to machine. Awaiting results."
-    })
-  }
-  else if(tempSubmitInfo["finished"]){
+  Submission.findOne({
+    "internalID": req.params["uid"]
+  }, function(err, result){
+    if(err){
+      console.log(err)
+      return res.json({
+        "status": "ERROR",
+        "message": "Error fetching submission status from database."
+      })
+    }
 
+    let state = {};
+
+    if(result.judged){
+      if(result.compileError){
+        state = {
+          "state": "Compile error",
+          "error": new Buffer(result.output["output_compile"], 'base64').toString('utf8')
+        }
+      }
+      else{
+        let outputLines = new Buffer(result.output["output_run"], 'base64').toString('utf8').split("\n");
+        console.log(outputLines)
+
+        state = {
+          "state": "Finished",
+          "output_run": outputLines[outputLines.length-2],
+          "output_error": new Buffer(result.output["output_error"], 'base64').toString('utf8')
+        }
+
+      }
+    }
+    else{
+      state = {
+        "state": "Awaiting run."
+      }
+    }
 
     return res.json({
       "status": "OK",
-      "message": "Judged",
-      "output": tempSubmitInfo["output"]
+      "data": state
     })
-  }
-  else{
-    return res.json({
-      "status": "OK",
-      "data": tempSubmitInfo
-    })
-  }
+
+  })
 })
 
 router.post('/submit', function(req, res, next){
