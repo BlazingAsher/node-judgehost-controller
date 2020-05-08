@@ -62,11 +62,9 @@ router.get('/config', function(req, res, next){
 
 })
 
-let submitID = Math.round(Math.random()*10000);
 let cID = 170;
 let teamID = 9;
 let probID = 4;
-let judgingID = 4;
 
 let judged = false;
 
@@ -144,8 +142,8 @@ router.get('/contests/:cid/submissions/:subid/source-code', function(req, res, n
 })
 
 router.put('/judgehosts/update-judging/:jd/:jid', function(req, res, next){
-  console.log("received update");
-  console.log(req.body);
+  //console.log("received judging update");
+  //console.log(req.body);
   if(req.body && req.body["compile_success"] !== '1'){
     submissionAcceptor.deliverResult(parseInt(req.params["jid"]), req.body, function(err, result){
       if(err) {
@@ -191,7 +189,7 @@ router.get("/testcases/:tid/file/output", function(req, res, next){
 router.post('/judgehosts/add-judging-run/:jd/:jid', function(req, res, next){
   //console.log(req.body);
   //console.log(req.params["jid"])
-  let batchInfo = JSON.parse(req.body.batch)
+  let batchInfo = JSON.parse(req.body.batch);
   //console.log(batchInfo);
   submissionAcceptor.deliverResult(parseInt(req.params["jid"]), batchInfo[0], function(err, result){
     if(err) {
