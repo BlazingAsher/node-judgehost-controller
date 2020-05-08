@@ -27,7 +27,7 @@ router.get('/status/:uid', function(req, res, next){
       })
     }
 
-    let state = {};
+    let state;
 
     if(result.judged){
       if(result.compileError){

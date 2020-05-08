@@ -12,28 +12,26 @@ const getDirectories = source =>
         .filter(dirent => dirent.isDirectory())
         .map(dirent => dirent.name)
 
-ScriptPacker.packageScripts = function() {
-    let oldWorking = __dirname;
-    let packageList = getDirectories('./scripts/unpacked');
-    for(let pack of packageList){
-        process.chdir(path.join(oldWorking, '../scripts/unpacked', pack));
-
-        let zip = new AdmZip();
-
-        let files = fs.readdirSync('.')
-
-        for(let file of files){
-            zip.addLocalFile(file);
-        }
-
-        zip.writeZip(path.join(oldWorking, '../scripts/assembled', pack + ".zip"), ()=>{});
-
-        //let zipBuffer = zip.toBuffer();
-
-    }
-
-    process.chdir(oldWorking);
-}
+// ScriptPacker.packageScripts = function() {
+//     let oldWorking = __dirname;
+//     let packageList = getDirectories('./scripts/unpacked');
+//     for(let pack of packageList){
+//         process.chdir(path.join(oldWorking, '../scripts/unpacked', pack));
+//
+//         let zip = new AdmZip();
+//
+//         let files = fs.readdirSync('.')
+//
+//         for(let file of files){
+//             zip.addLocalFile(file);
+//         }
+//
+//         zip.writeZip(path.join(oldWorking, '../scripts/assembled', pack + ".zip"), ()=>{});
+//
+//     }
+//
+//     process.chdir(oldWorking);
+// }
 
 ScriptPacker.loadScripts = function(){
     let scriptBundles = fs.readdirSync('./scripts/assembled');
@@ -50,8 +48,6 @@ ScriptPacker.loadScripts = function(){
 }
 
 ScriptPacker.fetchScript = function(name){
-    console.log(name)
-    console.log(scripts)
     return scripts[name];
 }
 
