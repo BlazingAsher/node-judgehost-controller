@@ -58,57 +58,18 @@ router.post('/submit', function(req, res, next){
 
   const subUUID = uuidv4();
 
-  submissionAcceptor.createSubmitTemp(subUUID, function(uuid){
-    // all submission stuff should have been done now
-    console.log("Done!")
-    console.log("UUID: "+ uuid);
-
-    // grab the final info
-    const finalSubmitInfo = submissionAcceptor.flushTempSubmission(uuid, true);
-
-    if(!finalSubmitInfo["valid"] || finalSubmitInfo["file"] === undefined) {
-      console.log("invalid submission");
-      return;
-    }
-    else {
-      Submission.create({
-        timestamp: Date.now(),
-        teamName: finalSubmitInfo["fields"]["team"] || "NOTEAM",
-        fileB64: finalSubmitInfo["file"],
-        submissionID: finalSubmitInfo["domSID"],
-        contestID: finalSubmitInfo["domCID"]
-      }, function(res, err){
-        if(err){
-          submissionAcceptor.handleError(uuid)(err);
-        }
-        else{
-          submissionAcceptor.setSubmitted(uuid);
-        }
-
-      })
-    }
-
-  })
-
-  form.onPart = function(part) {
-    // let formidable handle only non-file parts
-    if (part.filename === '' || !part.mime) {
-      // used internally, please do not override!
-      form.handlePart(part);
-    }
-    else {
-      part.on('error', submissionAcceptor.handleError(subUUID));
-      part.pipe(concat(submissionAcceptor.acceptFile(subUUID)));
-    }
-  };
-
   form.parse(req, (err, fields, files) => {
     if (err) {
       next(err);
       return;
     }
-    //res.json({ fields, files });
-    submissionAcceptor.addSubmissionData(subUUID, "fields", fields);
+    if(Object.keys(files).length === 0 || Object.keys(fields).length === 0){
+      return res.json({
+        "status": "ERROR",
+        "message": "You are missing data from your submission."
+      })
+    }
+    submissionAcceptor.addSubmissionData(subUUID, fields, files);
     res.json({"status": "OK", "subID": subUUID})
   });
 })

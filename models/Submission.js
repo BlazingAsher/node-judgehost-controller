@@ -5,6 +5,10 @@ let schema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    internalID: {
+        type: String,
+        required: true
+    },
     teamName: {
         type: String,
         required: true
@@ -18,6 +22,11 @@ let schema = new mongoose.Schema({
         required: true,
         default: false
     },
+    compileError: {
+        type: Boolean,
+        required: true,
+        default: false
+    },
     submissionID: {
         type: Number,
         required: true
@@ -27,9 +36,13 @@ let schema = new mongoose.Schema({
         required: true
     },
     output: {
-        type: String
+        type: Object
     }
 
 });
 
-module.exports = mongoose.model('StatEntry', schema);
+schema.statics.getNextUnjudged = function(callback){
+    this.findOne({judged: false}, {submissionID: 1}, callback)
+}
+
+module.exports = mongoose.model('Submission', schema);

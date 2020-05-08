@@ -4,6 +4,8 @@ var router = express.Router();
 const scriptPacker = require('../services/scriptPacker');
 const submissionAcceptor = require('../services/submissionAcceptor');
 
+const Submission = require('../models/Submission');
+
 /* GET home page. */
 router.get('/', function(req, res, next) {
   return res.json({"status": "waht r u doing here?"})
@@ -61,75 +63,101 @@ router.get('/config', function(req, res, next){
 })
 
 let submitID = Math.round(Math.random()*10000);
-let cID = 5;
+let cID = 170;
 let teamID = 9;
-let probID = 6;
-let judgingID = 3;
+let probID = 4;
+let judgingID = 4;
 
 let judged = false;
 
 router.post('/judgehosts/next-judging/:jd', function(req, res, next){
 
-  if(judged){
-    return res.json({})
-  }
-  if(!judged){
-    judged = true;
-  }
+  // if(judged){
+  //   return res.json({})
+  // }
+  // if(!judged){
+  //   judged = true;
+  // }
 
+  Submission.getNextUnjudged(function(err, result){
+    if(err || !result){
+      return res.json({})
+    }
 
-  return res.json({
-    "submitid": submitID,
-    "cid": cID,
-    "teamid": teamID,
-    "probid": probID,
-    "langid": "py3",
-    "language_extensions": [
+    return res.json({
+      "submitid": result.submissionID,
+      "cid": cID,
+      "teamid": teamID,
+      "probid": probID,
+      "langid": "py3",
+      "language_extensions": [
         "py",
         "py3"
-    ],
-    "filter_compiler_files": false,
-    "rejudgingid": null,
-    "entry_point": null,
-    "origsubumitid": null,
-    "maxruntime": 30,
-    "memlimit": 2097152,
-    "outputlimit": 8192,
-    "run": "run",
-    "compare": "compare",
-    "compare_args": null,
-    "compile_script": "py3",
-    "combined_run_compare": false,
-    "compare_md5sum": "ed319a7493a3988c0da9ae811572a7bc",
-    "run_md5sum": "426edeb71885fcd67c755328b05d6875",
-    "compile_script_md5sum": scriptPacker.fetchScript("py3")["md5"],
-    "judgingid": judgingID,
-    "testcases": {
-      "1": {
-        "md5sum_input": "b026324c6904b2a9cb4b88d6d61c81d1",
-        "md5sum_output": "59ca0efa9f5633cb0371bbc0355478d8",
-        "testcaseid": 1,
-        "rank": 1
+      ],
+      "filter_compiler_files": false,
+      "rejudgingid": null,
+      "entry_point": null,
+      "origsubumitid": null,
+      "maxruntime": 30,
+      "memlimit": 2097152,
+      "outputlimit": 8192,
+      "run": "run",
+      "compare": "compare",
+      "compare_args": null,
+      "compile_script": "py3",
+      "combined_run_compare": false,
+      "compare_md5sum": "ed319a7493a3988c0da9ae811572a7bc",
+      "run_md5sum": "426edeb71885fcd67c755328b05d6875",
+      "compile_script_md5sum": scriptPacker.fetchScript("py3")["md5"],
+      "judgingid": result.submissionID,
+      "testcases": {
+        "1": {
+          "md5sum_input": "b026324c6904b2a9cb4b88d6d61c81d1",
+          "md5sum_output": "59ca0efa9f5633cb0371bbc0355478d8",
+          "testcaseid": 1,
+          "rank": 1
+        }
       }
-    }
+    })
   })
-  return res.end();
+
+  //return res.end();
 })
 
 router.get('/contests/:cid/submissions/:subid/source-code', function(req, res, next){
-  return res.json([{
-    "id": submitID.toString(),
-    "submission_id": submitID.toString(),
-    "filename": "test.py",
-    "source": "aW5wdXQoKQpwcmludCgiSGVsbG8gd29ybGQhIikK",
+  Submission.findOne({submissionID: req.params["subid"]}, function(err, result){
+    let source = "";
+    if(err || !result){
+      console.log(err);
+    }
+    else{
+      source = result.fileB64;
+    }
+    return res.json([{
+      "id": req.params["subid"],
+      "submission_id": req.params["subid"],
+      "filename": "test.py",
+      "source": source,
+    }])
+  })
 
-  }])
 })
 
 router.put('/judgehosts/update-judging/:jd/:jid', function(req, res, next){
   console.log("received update");
-  //console.log(req.body);
-  return res.sendStatus(200).end();
+  console.log(req.body);
+  if(req.body && req.body["compile_success"] === '0'){
+    submissionAcceptor.deliverResult(parseInt(req.params["jid"]), req.body, function(err, result){
+      if(err) {
+        console.log(err);
+      }
+      return res.sendStatus(200).end();
+    }, true);
+  }
+  else{
+    return res.sendStatus(200).end();
+  }
+
 })
 
 router.get('/executables/py3', function(req, res, next){
@@ -161,8 +189,16 @@ router.get("/testcases/:tid/file/output", function(req, res, next){
 })
 
 router.post('/judgehosts/add-judging-run/:jd/:jid', function(req, res, next){
-  submissionAcceptor.delieverResult()
-  return res.end();
+  //console.log(req.body);
+  //console.log(req.params["jid"])
+  let batchInfo = JSON.parse(req.body.batch)
+  //console.log(batchInfo);
+  submissionAcceptor.deliverResult(parseInt(req.params["jid"]), batchInfo[0], function(err, result){
+    if(err) {
+      console.log(err);
+    }
+    return res.end();
+  });
 })
 
 module.exports = router;
