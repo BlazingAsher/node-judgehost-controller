@@ -21,7 +21,9 @@ scriptPacker.loadScripts();
 
 var app = express();
 
-app.use(logger('dev'));
+app.use(logger('dev', {
+    skip: function(req, res) {return req.method === "GET"}
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -29,8 +31,8 @@ app.use(cookieParser());
 app.use(cors());
 
 const limiter = rateLimit({
-    windowMs: 10 * 1000, // 10 seconds
-    max: 1 // limit each IP to 100 requests per windowMs
+    windowMs: 1000, // 1 second
+    max: 1 // limit each IP to 1 requests per windowMs
 });
 
 if(process.env.ENV !== 'development'){

@@ -57,36 +57,22 @@ router.get('/config', function(req, res, next){
       "update_judging_seconds": 5
     });
   }
-  //console.log(req.params);
-  //return res.json({})
 
 })
 
-let cID = 170;
-let teamID = 9;
-let probID = 4;
-
-let judged = false;
-
 router.post('/judgehosts/next-judging/:jd', function(req, res, next){
-
-  // if(judged){
-  //   return res.json({})
-  // }
-  // if(!judged){
-  //   judged = true;
-  // }
-
   Submission.getNextUnjudged(function(err, result){
     if(err || !result){
       return res.json({})
     }
 
+    let mockInfo = submissionAcceptor.getMockInfo();
+
     return res.json({
       "submitid": result.submissionID,
-      "cid": cID,
-      "teamid": teamID,
-      "probid": probID,
+      "cid": mockInfo["contestID"],
+      "teamid": mockInfo["teamID"],
+      "probid": mockInfo["probID"],
       "langid": "py3",
       "language_extensions": [
         "py",
@@ -141,23 +127,6 @@ router.get('/contests/:cid/submissions/:subid/source-code', function(req, res, n
 
 })
 
-router.put('/judgehosts/update-judging/:jd/:jid', function(req, res, next){
-  //console.log("received judging update");
-  //console.log(req.body);
-  if(req.body && req.body["compile_success"] !== '1'){
-    submissionAcceptor.deliverResult(parseInt(req.params["jid"]), req.body, function(err, result){
-      if(err) {
-        console.log(err);
-      }
-      return res.sendStatus(200).end();
-    }, true);
-  }
-  else{
-    return res.sendStatus(200).end();
-  }
-
-})
-
 router.get('/executables/py3', function(req, res, next){
   return res.send(`"${scriptPacker.fetchScript("py3")["base64"]}"`)
   //return res.send('"UEsDBBQAAAAIAExiYk++Rw5oNQMAAM4FAAADABwAcnVuVVQJAANQrL1dUKy9XXV4CwABBOgDAAAE6AMAAG1U72/bNhD9PP4VF8VNgC6yk+2bW3crYq11EdtF7GAbuiKgqZNFVCI1kkqiFv3fd6cfibvWHwyRPL679+4dj48mO20mPhfiGN43IbfmV1C2rHSBcO9kVaGLvXK6CpBZB6f92djnp2O6skGEkMsABzG+MUE+gDQplNYhaJNZiqXoba79EJla9GBsAKlCLYuigajHjggRwdvaKTyDXR2oEB0oWhKEz7EoBow2872mjaw2KmhrQPr2Nj6gqoPcFTiF+xwNKEqB6RnoQCDtlS4ED5LRfsjbtbLOoQpUekBXOaT/ntYZndeeMAjP3muzpzWRegpMB7BgYYdQe9oJThpfSfoPxJNK1FlfCH33rFO+IMEH0k0W1iBQY6RrvlfO4b+1dug7+lXftLYIus006aujkTtrw1iIebLZzqLRRQQvSEGdBbFMlleL5eL/u68Xq8365voyof0vyWp7/fft+/VitZ3Go4uvEZvkGivrQieyCa6ByhL5M2JNlEhmw6y9vGOxcbwft5YoJCvosCpkMxXE/gPEnyEaHWSI4OMLRjUC6IcqtxAtyDlTSElVxcK2+W7bfFMYca2XV683m0hkmiu7zFF96tskBlnikhS6HRwdjX6PRPLXYnu5niez0W/iAxfRryOISfVz+AgnJ+QOYvN4JFwJcQZxDM/HVaOeshGVAxW4CXey0GlH8QhiR/hPov6IY+KcdVMoJfWsd07GpZ4e3DtlYJ4VhzJlU0fw6uSXDoTrvOgV+JPnpDc2W7MzzFQo8skrqoRtEMHLl8n6D3H8OPnH8AYNOtl6l8drGHgy5DAknZzfzIMd6h1z6nnbJEi1M7LEdvhVLs0eeYuR6NYdSQWqkL4jk9maopD5+3GnWPTP6Mv5s8nzrxEczXh1/iTZTyo9OO8ZewyEZWKSwbeU366XCfXAaZaJ85by02P5Ob1njcCH1sEcOZvwMzShaiYtAkPeGHJLyaWyxwvNk4g069zrxtY0s9zo0AGj9Jq0YI8HlKXnjKmFwtJ7Q1gp7ur9nurit7LPu15dLVbJ7bub+ZtkdgHz9bL/FILVfhzob41DzNm61Dih8tKmIH9+GDrKF6mgc/EfUEsDBAoAAAAAAExiYk/QhZX8HwAAAB8AAAAFABwAYnVpbGRVVAkAA1CsvV1QrL1ddXgLAAEE6AMAAAToAwAAIyEvYmluL3NoCiMgbm90aGluZyB0byBjb21waWxlClBLAQIeAxQAAAAIAExiYk++Rw5oNQMAAM4FAAADABgAAAAAAAEAAADtgQAAAABydW5VVAUAA1CsvV11eAsAAQToAwAABOgDAABQSwECHgMKAAAAAABMYmJP0IWV/B8AAAAfAAAABQAYAAAAAAABAAAA7YFyAwAAYnVpbGRVVAUAA1CsvV11eAsAAQToAwAABOgDAABQSwUGAAAAAAIAAgCUAAAA0AMAAAAA"')
@@ -184,6 +153,25 @@ router.get("/testcases/:tid/file/input", function(req, res, next){
 
 router.get("/testcases/:tid/file/output", function(req, res, next){
   return res.send('"SGVsbG8gd29ybGQhCg=="');
+})
+
+router.put('/judgehosts/update-judging/:jd/:jid', function(req, res, next){
+  //console.log("received judging update");
+  //console.log(req.body);
+  if(req.body && req.body["compile_success"] !== '1'){
+    //console.log("compile error");
+    submissionAcceptor.deliverResult(parseInt(req.params["jid"]), req.body, function(err, result){
+      if(err) {
+        console.log(err);
+      }
+      //console.log("hello")
+      return res.sendStatus(200).end();
+    }, true);
+  }
+  else{
+    return res.sendStatus(200).end();
+  }
+
 })
 
 router.post('/judgehosts/add-judging-run/:jd/:jid', function(req, res, next){

@@ -7,19 +7,7 @@ const Settings = require('../models/Settings');
 
 let Submission = require('../models/Submission');
 
-let submissionTemp = {};
-
-let contestID = 5;
-
-SubmissionAcceptor.flushTempSubmission = function(id, keep = false){
-    let submissionInfo = submissionTemp[id];
-    if(!keep){
-        console.log("deleting " + id)
-        delete submissionTemp[id];
-    }
-
-    return submissionInfo;
-}
+let contestID = 102;
 
 SubmissionAcceptor.addSubmissionData = function (id, fields, files){
     let fileBuffer = fs.readFileSync(files["program"]["path"]);
@@ -55,6 +43,14 @@ SubmissionAcceptor.deliverResult = function (subid, result, callback, compileErr
             "compileError": compileError
         }
     }, {useFindAndModify: false}, callback)
+}
+
+SubmissionAcceptor.getMockInfo = function(){
+    return {
+        contestID: contestID,
+        teamID: 9,
+        probID: 3
+    }
 }
 
 module.exports = SubmissionAcceptor;

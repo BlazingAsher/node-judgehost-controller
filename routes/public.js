@@ -33,17 +33,19 @@ router.get('/status/:uid', function(req, res, next){
       if(result.compileError){
         state = {
           "state": "Compile error",
-          "error": new Buffer(result.output["output_compile"], 'base64').toString('utf8')
+          "error": Buffer.from(result.output["output_compile"], 'base64').toString('utf8')
         }
       }
       else{
-        let outputLines = new Buffer(result.output["output_run"], 'base64').toString('utf8').split("\n");
+        let outputLines = Buffer.from(result.output["output_run"], 'base64').toString('utf8').split("\n");
         console.log(outputLines)
 
         state = {
           "state": "Finished",
+          "judge_response": result.output.runresult,
+          "runtime": result.output.runtime,
           "output_run": outputLines[outputLines.length-2],
-          "output_error": new Buffer(result.output["output_error"], 'base64').toString('utf8')
+          "output_error": Buffer.from(result.output["output_error"], 'base64').toString('utf8')
         }
 
       }
