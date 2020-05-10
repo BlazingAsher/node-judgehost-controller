@@ -20,7 +20,7 @@ router.get('/status/:uid', function(req, res, next){
     "internalID": req.params["uid"]
   }, function(err, result){
     if(err){
-      console.log(err)
+      console.log(err || !result)
       return res.json({
         "status": "ERROR",
         "message": "Error fetching submission status from database."
