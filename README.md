@@ -1,3 +1,3 @@
-# hackenger-judgehost-controller
+# node-judgehost-controller
 
 Very basic NodeJS controller for the DOMJudge judgehost.
